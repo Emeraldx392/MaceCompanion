@@ -37,21 +37,19 @@ object ModifierManager {
         modifierBoosters.clear()
     }
 
-    fun getHover(text: Component): String? {
+    fun getHover(text: Component, textToSkip: String): String {
         val hover = text.style.hoverEvent
         if (hover != null && hover.action() == HoverEvent.Action.SHOW_TEXT) {
             val showText = hover as? HoverEvent.ShowText
             val content: Component? = showText?.value
             val readableText = content?.string
-            if (readableText != null) {
-                return readableText
-            }
+            if (readableText != null && !readableText.contains(textToSkip)) return readableText
         }
         for (sibling in text.siblings) {
-            val found = getHover(sibling)
+            val found = getHover(sibling, textToSkip)
+            if(found.contains(textToSkip)) return "null"
             if (found != "null") return found
         }
-
         return "null"
     }
 
@@ -96,6 +94,7 @@ object ModifierManager {
                     " ᴛʀɪᴘʟᴇ " -> modifiersToCheck = 3
                     " ᴄʜᴀᴏꜱ " -> modifiersToCheck = 5
                     " ᴍᴀʏʜᴇᴍ " -> modifiersToCheck = 7
+                    " ᴅᴏᴏᴍꜱᴅᴀʏ " -> modifiersToCheck = 8
                 }
             }
             if (modifiersToCheck > 0) {
@@ -104,9 +103,9 @@ object ModifierManager {
                 val modMatch = if(boostedMatch == null && reallyBoostedMatch == null) chatModifierItemRegex.matchEntire(text) else null
                 when {
                     reallyBoostedMatch != null -> {
-                        val hoverString = getHover(message).toString().replace("§r", "")
-                        val playerNames = hoverString.split(", ")
                         val modifier = getModifierFromMessage(message)
+                        val hoverString = getHover(message, modifier.matchName).replace("§r", "")
+                        val playerNames = hoverString.split(", ")
                         modifierBoosters[modifier] = mutableListOf()
                         if (isModifierEternalFromMessage(message)) eternalModifier = modifier
                         modifiers[modifier] = isModifierChargedFromMessage(message)
