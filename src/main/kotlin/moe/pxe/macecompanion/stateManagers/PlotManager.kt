@@ -1,11 +1,17 @@
 package moe.pxe.macecompanion.stateManagers
 
+import moe.pxe.macecompanion.config.ConfigMenu
 import moe.pxe.macecompanion.stateManagers.EliminationManager.playersTotal
 import moe.pxe.macecompanion.stateManagers.PerformanceStatsManager.tps
 import moe.pxe.macecompanion.util.SendMessage
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents
+import net.fabricmc.fabric.api.client.screen.v1.Screens
 import net.minecraft.client.Minecraft
+import net.minecraft.client.gui.components.Button
+import net.minecraft.client.gui.screens.PauseScreen
+import net.minecraft.network.chat.Component
 object PlotManager {
 
     val patchPlotRegex = Regex("""⏵ Current Patch""")
@@ -38,14 +44,34 @@ object PlotManager {
             it.toIntOrNull()?.let { i -> plotIds.add(i) } ?: plotHandles.add(it)
         }
     }
+
     fun requestPlotId() {
         if (onDiamondfire && !hidePlotRegex) {
             hidePlotRegex = true
             SendMessage.sendCommand("find ${client.user.name}")
         }
     }
+
+    fun replaceButton(screen: PauseScreen) {
+        val widgets = Screens.getWidgets(screen)
+        if (onMaceRoulette) {
+            val targetButton = widgets.find { widget ->
+                widget is Button && widget.message == Component.translatable("gui.advancements")
+            } as? Button
+            if (targetButton != null) {
+                val newButton = Button.builder(Component.literal("MRC Settings")) { _ ->
+                    val configScreen = ConfigMenu.generateScreen(null)
+                    client.gui.setScreen(configScreen)
+                }.bounds(targetButton.x, targetButton.y, targetButton.width, targetButton.height).build()
+                widgets.remove(targetButton)
+                widgets.add(newButton)
+            }
+        }
+    }
+
     fun registerServerAndPlotListeners() {
         ClientPlayConnectionEvents.JOIN.register { _, _, _ ->
+            onMaceRoulette = false
             plotId = null
             plotHandle = null
             onDiamondfire = isOnDiamondfire()
@@ -92,6 +118,9 @@ object PlotManager {
             }
 
             return@register true
+        }
+        ScreenEvents.AFTER_INIT.register { _, screen, _, _ ->
+            if (screen is PauseScreen) replaceButton(screen)
         }
     }
 }
