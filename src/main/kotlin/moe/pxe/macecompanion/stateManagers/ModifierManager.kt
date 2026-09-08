@@ -12,7 +12,7 @@ import net.minecraft.network.chat.HoverEvent
 import kotlin.text.Regex
 
 object ModifierManager {
-    var modifiersToCheck = -1
+    var checkingModifiers = false
     var mysteryAmount = 0
     var modifiers = mutableMapOf<Modifiers, Boolean>()
     var eternalModifier: Modifiers? = null
@@ -30,7 +30,7 @@ object ModifierManager {
     val client: Minecraft = Minecraft.getInstance()
 
     fun resetModifierData() {
-        modifiersToCheck = -1
+        checkingModifiers = false
         mysteryAmount = 0
         modifiers.clear()
         eternalModifier = null
@@ -87,66 +87,35 @@ object ModifierManager {
 
             if (!hasTriangle && !hasRotatedSquare) return@register true
 
-            if (hasTriangle) chatModifierHeaderRegex.matchEntire(text)?.groups[1]?.let {
-                when (it.value) {
-                    " " -> modifiersToCheck = 1
-                    " ᴅᴏᴜʙʟᴇ " -> modifiersToCheck = 2
-                    " ᴛʀɪᴘʟᴇ " -> modifiersToCheck = 3
-                    " ᴄʜᴀᴏꜱ " -> modifiersToCheck = 5
-                    " ᴍᴀʏʜᴇᴍ " -> modifiersToCheck = 7
-                    " ᴅᴏᴏᴍꜱᴅᴀʏ " -> modifiersToCheck = 8
-                }
-            }
-            if (modifiersToCheck > 0) {
+            if (checkingModifiers) {
                 val reallyBoostedMatch = chatModifierReallyBoostedRegex.matchEntire(text)
                 val boostedMatch = if(reallyBoostedMatch == null) chatModifierBoostedRegex.matchEntire(text) else null
                 val modMatch = if(boostedMatch == null && reallyBoostedMatch == null) chatModifierItemRegex.matchEntire(text) else null
-                when {
-                    reallyBoostedMatch != null -> {
-                        val modifier = getModifierFromMessage(message)
-                        val hoverString = getHover(message, modifier.matchName).replace("§r", "")
-                        val playerNames = hoverString.split(", ")
-                        modifierBoosters[modifier] = mutableListOf()
-                        if (isModifierEternalFromMessage(message)) eternalModifier = modifier
-                        modifiers[modifier] = isModifierChargedFromMessage(message)
-                        for (player in playerNames) {
-                            getPlayerProfile(player)?.let { profile ->
-                                modifierBoosters[modifier]?.add(profile)
-                            }
-                        }
-                        modifiersToCheck--
-                        if (modifiersToCheck < 1) updateMaceChance()
-                    }
 
-                    boostedMatch != null -> {
-                        boostedMatch.groups[1]?.let {
-                            val playerNames = it.value.split(", ")
-                            val modifier = getModifierFromMessage(message)
-                            modifierBoosters[modifier] = mutableListOf()
-                            if (isModifierEternalFromMessage(message)) eternalModifier = modifier
-                            modifiers[modifier] = isModifierChargedFromMessage(message)
-                            for (player in playerNames) {
-                                getPlayerProfile(player)?.let { profile ->
-                                    modifierBoosters[modifier]?.add(profile)
-                                }
-                            }
-                        }
-                        modifiersToCheck--
-                        if (modifiersToCheck < 1) updateMaceChance()
-                    }
+                val isReallyBoosted = reallyBoostedMatch != null
+                val isBoosted = boostedMatch != null
+                val isMod = modMatch != null
 
-                    modMatch != null -> {
-                        val modifier = getModifierFromMessage(message)
-                        if (isModifierEternalFromMessage(message)) eternalModifier = modifier
-                        modifiers[modifier] = isModifierChargedFromMessage(message)
-                        modifiersToCheck--
-                        if (modifiersToCheck < 1) updateMaceChance()
+                if (isReallyBoosted || isBoosted || isMod) {
+                    val modifier = getModifierFromMessage(message)
+                    if (isModifierEternalFromMessage(message)) eternalModifier = modifier
+                    modifiers[modifier] = isModifierChargedFromMessage(message)
+                    val playerNames = when {
+                        isReallyBoosted -> {
+                            val hoverString = getHover(message, modifier.matchName).replace("§r", "")
+                            hoverString.split(", ")
+                        }
+                        isBoosted -> boostedMatch.groups[1]?.value?.split(", ")
+                        else -> null
                     }
-                }
+                    if (playerNames != null) modifierBoosters[modifier] = playerNames.mapNotNull { getPlayerProfile(it) }.toMutableList()
+                    updateMaceChance()
+                } else checkingModifiers = false
             }
-
+            if (hasTriangle) chatModifierHeaderRegex.matchEntire(text)?.groups[1]?.let {
+                checkingModifiers = true
+            }
             return@register true
         }
-
     }
 }

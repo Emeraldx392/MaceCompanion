@@ -13,6 +13,7 @@ object ConsumableManager {
     val modifierChargerRegex = Regex("""⏵ (.+) used a Modifier Charger on (.+)!\n\s+◇ It will be charged for its next (\d+) appearances!""")
     val chaosDustChaosRegex = Regex("""⏵ (.+) activated Chaos!\n\s+◇ The next round will have five modifiers!""")
     val chaosDustMayhemRegex = Regex("""⏵ (.+) activated Mayhem!\n\s+◇ The next round will have seven modifiers!""")
+    val chaosDustDoomsdayRegex = Regex("""⏵ (.+) activated Doomsday!\n\s+◇ The next round will have ten modifiers!""")
     val eternalElectorRegex = Regex("""⏵ (.+) used a Eternal Elector for (.+)!""")
     val eternalElectorPositionRegex = Regex("""\s+◇ It has been queued at position #(\d+)!""")
 
@@ -41,6 +42,10 @@ object ConsumableManager {
             chaosDustMayhemRegex.matchEntire(text)?.groups?.let {
                 val player = it[1]?.value.toString()
                 sendChaosDustToast(player, 7)
+            }
+            chaosDustDoomsdayRegex.matchEntire(text)?.groups?.let {
+                val player = it[1]?.value.toString()
+                sendChaosDustToast(player, 10)
             }
             eternalElectorRegex.matchEntire(text)?.groups?.let {
                 eternalElectorPlayer = it[1]?.value.toString()

@@ -37,8 +37,8 @@ object CustomToasts {
         val client: Minecraft = Minecraft.getInstance()
         var playerName = player
         if (player == client.user.name) playerName = "You"
-        val numberString = if(amount == 5) "five" else "seven"
-        val modString = if(amount == 5) "Chaos" else "Mayhem"
+        val numberString = if(amount == 5) "five" else if(amount == 7) "seven" else "ten"
+        val modString = if(amount == 5) "Chaos" else if(amount == 7) "Mayhem" else "Doomsday"
         val description = Component.literal("The next round will have $numberString modifiers!")
         sendCustomToast(Component.literal("$playerName activated $modString!"), description)
     }

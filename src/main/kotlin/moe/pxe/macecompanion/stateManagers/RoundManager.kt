@@ -12,7 +12,7 @@ import moe.pxe.macecompanion.stateManagers.EliminationManager.playersTotal
 import moe.pxe.macecompanion.stateManagers.ModifierManager.eternalModifier
 import moe.pxe.macecompanion.stateManagers.ModifierManager.modifierBoosters
 import moe.pxe.macecompanion.stateManagers.ModifierManager.modifiers
-import moe.pxe.macecompanion.stateManagers.ModifierManager.modifiersToCheck
+import moe.pxe.macecompanion.stateManagers.ModifierManager.checkingModifiers
 import moe.pxe.macecompanion.stateManagers.ModifierManager.mysteryAmount
 import moe.pxe.macecompanion.stateManagers.PlotManager.plotHandle
 import moe.pxe.macecompanion.stateManagers.PlotManager.plotId
@@ -74,7 +74,7 @@ object RoundManager {
         modifiers.clear()
         modifierBoosters.clear()
         eternalModifier = null
-        modifiersToCheck = -1
+        checkingModifiers = true
         mysteryAmount = 0
         maceChance = 100f / playersAlive
         hideNewRoundOrGameTextMessage = false
