@@ -12,6 +12,8 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Button
 import net.minecraft.client.gui.screens.PauseScreen
 import net.minecraft.network.chat.Component
+import java.util.concurrent.CompletableFuture
+
 object PlotManager {
 
     val patchPlotRegex = Regex("""⏵ Current Patch""")
@@ -85,6 +87,7 @@ object PlotManager {
             AccuracyManager.resetAccuracyData()
             RoundManager.resetRoundData()
             ModifierManager.resetModifierData()
+            AchievementManager.clearAllTriggers()
         }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->
             onDiamondfire = false
@@ -99,22 +102,25 @@ object PlotManager {
             if (overlay) return@register true
             if (!text.contains('⏵') && !text.contains('→')) return@register true
 
-            if (patchPlotRegex.containsMatchIn(text)) requestPlotId()
+            CompletableFuture.runAsync {
+                if (patchPlotRegex.containsMatchIn(text)) requestPlotId()
 
-            plotRegex.find(text)?.groups?.let {
-                plotId = it[1]?.value?.toIntOrNull()
-                plotHandle = it[2]?.value
+                plotRegex.find(text)?.groups?.let {
+                    plotId = it[1]?.value?.toIntOrNull()
+                    plotHandle = it[2]?.value
 
-                onMaceRoulette = plotHandles.contains(plotHandle) || plotIds.contains(plotId)
-                isStatless = (plotId == 25000031 || plotHandle == "statless")
-                findPlayerCommandRegex.find(text)?.groups?.let {
-                    val totalPlayersFound = it[1]?.value?.toIntOrNull() ?: -1
-                    playersTotal = totalPlayersFound
+                    onMaceRoulette = plotHandles.contains(plotHandle) || plotIds.contains(plotId)
+                    isStatless = (plotId == 25000031 || plotHandle == "statless")
+                    findPlayerCommandRegex.find(text)?.groups?.let {
+                        val totalPlayersFound = it[1]?.value?.toIntOrNull() ?: -1
+                        playersTotal = totalPlayersFound
+                    }
                 }
-                if (hidePlotRegex) {
-                    hidePlotRegex = false
-                    return@register false
-                }
+            }
+
+            if (hidePlotRegex) {
+                hidePlotRegex = false
+                return@register false
             }
 
             return@register true

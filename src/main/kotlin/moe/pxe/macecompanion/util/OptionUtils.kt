@@ -65,4 +65,12 @@ object OptionUtils {
             .controller(TickBoxControllerBuilder::create)
             .build()
     }
+    fun genericBooleanOption(translationKey: String, configBinding: Binding<Boolean>): Option<Boolean> {
+        return Option.createBuilder<Boolean>()
+            .name(Component.translatable(translationKey))
+            .description(OptionDescription.of(Component.translatable("$translationKey.description")))
+            .binding(configBinding)
+            .controller(TickBoxControllerBuilder::create)
+            .build()
+    }
 }

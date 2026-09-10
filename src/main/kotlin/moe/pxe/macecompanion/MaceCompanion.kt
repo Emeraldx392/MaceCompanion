@@ -4,6 +4,7 @@ import dev.isxander.yacl3.config.v3.value
 import moe.pxe.macecompanion.config.Config
 import moe.pxe.macecompanion.config.ConfigUpdater
 import moe.pxe.macecompanion.stateManagers.AccuracyManager
+import moe.pxe.macecompanion.stateManagers.AchievementManager
 import moe.pxe.macecompanion.stateManagers.BountyManager
 import moe.pxe.macecompanion.stateManagers.ConsumableManager
 import moe.pxe.macecompanion.stateManagers.EliminationManager
@@ -12,6 +13,7 @@ import moe.pxe.macecompanion.stateManagers.ModifierManager
 import moe.pxe.macecompanion.stateManagers.PerformanceStatsManager
 import moe.pxe.macecompanion.stateManagers.PlayersOnlineManager
 import moe.pxe.macecompanion.stateManagers.PlotManager
+import moe.pxe.macecompanion.stateManagers.ResourcePackManager
 import moe.pxe.macecompanion.stateManagers.RoundManager
 import moe.pxe.macecompanion.stateManagers.ShowdownManager
 import moe.pxe.macecompanion.stateManagers.StarFragmentManager
@@ -49,6 +51,8 @@ class MaceCompanion : ModInitializer {
         AccuracyManager.registerAccuracyListeners()
         RoundManager.registerRoundListeners()
         ModifierManager.registerModifierListeners()
+        AchievementManager.registerAchievementListeners()
+        ResourcePackManager.registerResourcePackListeners()
         SendMessage.registerTickListener()
         HideGLGG.registerListener()
         RoundInfoHud.registerListener()

@@ -364,6 +364,16 @@
     "mrc.config.tps.category.styling.group.colors.option.number_color": "Tps number color",
     "mrc.config.tps.category.styling.group.colors.option.number_color.description": "The color of the number of tps if \"Override colors\" is enabled.",
 
+    "mrc.config.achievements.category.selected_achievements": "Achievements Displayed",
+
+    "mrc.config.achievements.category.selected_achievements.option.kill_switch": "Kill Switch",
+    "mrc.config.achievements.category.selected_achievements.option.kill_switch.description": "Shows if you can still obtain the Kill Switch achievement in this game",
+    "mrc.config.achievements.category.selected_achievements.option.nice_and_cheesy": "Nice and Cheesy",
+    "mrc.config.achievements.category.selected_achievements.option.nice_and_cheesy.description": "Shows if you can still obtain the Nice and Cheesy achievement in this round",
+    "mrc.config.achievements.category.selected_achievements.option.shoegaze": "Shoegaze",
+    "mrc.config.achievements.category.selected_achievements.option.shoegaze.description": "Shows if you can still obtain the Shoegaze achievement in this game",
+    "mrc.config.achievements.category.selected_achievements.option.w_no_w": "W, No W",
+    "mrc.config.achievements.category.selected_achievements.option.w_no_w.description": "Shows if you can still obtain the W, No W achievement in this game",
 
     "mrc.roundhud.round": "ʀᴏᴜɴᴅ %s",
     "mrc.roundhud.alive": "%s ᴀʟɪᴠᴇ",
@@ -458,6 +468,7 @@
     "mrc.hudelement.fps": "FPS",
     "mrc.hudelement.ping": "Ping",
     "mrc.hudelement.tps": "TPS",
+    "mrc.hudelement.achievements": "Achievements Display",
 
     "mrc.betConditions.is_red": "Is red",
     "mrc.betConditions.is_blue": "Is blue",

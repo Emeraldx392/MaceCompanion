@@ -9,6 +9,7 @@ import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.HoverEvent
+import java.util.concurrent.CompletableFuture
 import kotlin.text.Regex
 
 object ModifierManager {
@@ -76,46 +77,49 @@ object ModifierManager {
     }
 
     fun registerModifierListeners() {
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.GAME.register { message, overlay ->
             val text = message.string
 
-            if (overlay) return@register true
-            if (!PlotManager.onMaceRoulette) return@register true
+            if (overlay) return@register
+            if (!PlotManager.onMaceRoulette) return@register
 
             val hasTriangle = text.startsWith("⏵")
             val hasRotatedSquare = text.contains("◇")
 
-            if (!hasTriangle && !hasRotatedSquare) return@register true
+            if (!hasTriangle && !hasRotatedSquare) return@register
 
-            if (checkingModifiers) {
-                val reallyBoostedMatch = chatModifierReallyBoostedRegex.matchEntire(text)
-                val boostedMatch = if(reallyBoostedMatch == null) chatModifierBoostedRegex.matchEntire(text) else null
-                val modMatch = if(boostedMatch == null && reallyBoostedMatch == null) chatModifierItemRegex.matchEntire(text) else null
+            CompletableFuture.runAsync {
+                if (checkingModifiers) {
+                    val reallyBoostedMatch = chatModifierReallyBoostedRegex.matchEntire(text)
+                    val boostedMatch = if (reallyBoostedMatch == null) chatModifierBoostedRegex.matchEntire(text) else null
+                    val modMatch = if (boostedMatch == null && reallyBoostedMatch == null) chatModifierItemRegex.matchEntire(text) else null
 
-                val isReallyBoosted = reallyBoostedMatch != null
-                val isBoosted = boostedMatch != null
-                val isMod = modMatch != null
+                    val isReallyBoosted = reallyBoostedMatch != null
+                    val isBoosted = boostedMatch != null
+                    val isMod = modMatch != null
 
-                if (isReallyBoosted || isBoosted || isMod) {
-                    val modifier = getModifierFromMessage(message)
-                    if (isModifierEternalFromMessage(message)) eternalModifier = modifier
-                    modifiers[modifier] = isModifierChargedFromMessage(message)
-                    val playerNames = when {
-                        isReallyBoosted -> {
-                            val hoverString = getHover(message, modifier.matchName).replace("§r", "")
-                            hoverString.split(", ")
+                    if (isReallyBoosted || isBoosted || isMod) {
+                        val modifier = getModifierFromMessage(message)
+                        if (isModifierEternalFromMessage(message)) eternalModifier = modifier
+                        modifiers[modifier] = isModifierChargedFromMessage(message)
+                        val playerNames = when {
+                            isReallyBoosted -> {
+                                val hoverString = getHover(message, modifier.matchName).replace("§r", "")
+                                hoverString.split(", ")
+                            }
+
+                            isBoosted -> boostedMatch.groups[1]?.value?.split(", ")
+                            else -> null
                         }
-                        isBoosted -> boostedMatch.groups[1]?.value?.split(", ")
-                        else -> null
-                    }
-                    if (playerNames != null) modifierBoosters[modifier] = playerNames.mapNotNull { getPlayerProfile(it) }.toMutableList()
-                    updateMaceChance()
-                } else checkingModifiers = false
+                        if (playerNames != null) modifierBoosters[modifier] = playerNames.mapNotNull { getPlayerProfile(it) }.toMutableList()
+                        updateMaceChance()
+                    } else checkingModifiers = false
+                }
+                if (hasTriangle) chatModifierHeaderRegex.matchEntire(text)?.groups[1]?.let {
+                    checkingModifiers = true
+                }
             }
-            if (hasTriangle) chatModifierHeaderRegex.matchEntire(text)?.groups[1]?.let {
-                checkingModifiers = true
-            }
-            return@register true
+            return@register
         }
     }
 }

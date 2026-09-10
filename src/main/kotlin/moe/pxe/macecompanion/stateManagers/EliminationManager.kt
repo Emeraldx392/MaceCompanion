@@ -15,6 +15,7 @@ import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.Items
+import java.util.concurrent.CompletableFuture
 import kotlin.collections.set
 import kotlin.text.Regex
 
@@ -55,36 +56,38 @@ object EliminationManager {
     }
 
     fun registerEliminationListeners() {
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.GAME.register { message, overlay ->
             val text = message.string
 
-            if (overlay) return@register true
+            if (overlay) return@register
             val hasAxe = text.contains("🪓")
             val hasArrow = text.contains("→")
-            if (!text.startsWith("⏵ ") && !hasAxe && !hasArrow) return@register true
+            if (!text.startsWith("⏵ ") && !hasAxe && !hasArrow) return@register
 
-            val eliminationMatch =
-                if (text.contains("eliminated")) chatEliminationRegex.matchEntire(text)
-                else if (text.contains("left")) chatEarlyLeaveRegex.matchEntire(text)
-                else if (text.contains("blew")) chatBlowUpRegex.matchEntire(text)
-                else if (text.contains("spike")) chatSpikeDeathRegex.matchEntire(text)
-                else if (text.contains("lightning")) chatLightningDeathRegex.matchEntire(text)
-                else if (text.contains("thrown")) chatVoidEliminationRegex.matchEntire(text)
-                else chatVoidDeathRegex.matchEntire(text)
-            eliminationMatch?.groups?.let {
-                playersAlive = it[2]?.value?.toIntOrNull() ?: -1
-                if (!eliminated) calculateStarFragments()
+            CompletableFuture.runAsync {
+                val eliminationMatch =
+                    if (text.contains("eliminated")) chatEliminationRegex.matchEntire(text)
+                    else if (text.contains("left")) chatEarlyLeaveRegex.matchEntire(text)
+                    else if (text.contains("blew")) chatBlowUpRegex.matchEntire(text)
+                    else if (text.contains("spike")) chatSpikeDeathRegex.matchEntire(text)
+                    else if (text.contains("lightning")) chatLightningDeathRegex.matchEntire(text)
+                    else if (text.contains("thrown")) chatVoidEliminationRegex.matchEntire(text)
+                    else chatVoidDeathRegex.matchEntire(text)
+                eliminationMatch?.groups?.let {
+                    playersAlive = it[2]?.value?.toIntOrNull() ?: -1
+                    if (!eliminated) calculateStarFragments()
+                }
+                if (hasAxe && !eliminated) chatElimCounterRegex.matchEntire(text)?.groups[1]?.let {
+                    if (lastRoundWithMace == round) maceAttempts[round] = true
+                    eliminations = it.value.toIntOrNull() ?: 0
+                    calculateStarFragments()
+                }
+                if (!eliminated) chatEarlyLeaveRegex.matchEntire(text)?.groups[1]?.let {
+                    val playerThatLeft = getPlayerProfile(it.value)
+                    if (bounties.contains(playerThatLeft)) bounties.remove(playerThatLeft)
+                }
             }
-            if (hasAxe && !eliminated) chatElimCounterRegex.matchEntire(text)?.groups[1]?.let {
-                if (lastRoundWithMace == round) maceAttempts[round] = true
-                eliminations = it.value.toIntOrNull() ?: 0
-                calculateStarFragments()
-            }
-            if (!eliminated) chatEarlyLeaveRegex.matchEntire(text)?.groups[1]?.let {
-                val playerThatLeft = getPlayerProfile(it.value)
-                if (bounties.contains(playerThatLeft)) bounties.remove(playerThatLeft)
-            }
-            return@register true
+            return@register
         }
         TitleCallback.EVENT.register(
             object : TitleCallback {

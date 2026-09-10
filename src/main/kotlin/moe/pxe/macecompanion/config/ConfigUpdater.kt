@@ -139,7 +139,7 @@ object ConfigUpdater {
             updateBooleanConfigEntry(configFile, "overridePingColors", "pingOverrideColors")
             updateBooleanConfigEntry(configFile, "overrideTpsColors", "tpsOverrideColors")
 
-            setConfigVersion(configFile, "0.3.5")
+            setConfigVersion(configFile, "0.4.0")
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -149,7 +149,7 @@ object ConfigUpdater {
         val configFile = FabricLoader.getInstance().configDir.resolve("mrc.json")
         if (!Files.exists(configFile)) return
         val version = getConfigVersion(configFile)
-        if(version != "0.3.5") updateConfig(configFile)
+        if(version != "0.4.0") updateConfig(configFile)
     }
 
 }

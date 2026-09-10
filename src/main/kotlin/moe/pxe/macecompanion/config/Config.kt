@@ -1,5 +1,6 @@
 package moe.pxe.macecompanion.config
 
+import com.mojang.serialization.Codec
 import com.mojang.serialization.DataResult
 import com.mojang.serialization.DynamicOps
 import com.mojang.serialization.codecs.PrimitiveCodec
@@ -177,6 +178,9 @@ object Config : JsonFileCodecConfig<Config>(FabricLoader.getInstance().configDir
     val tpsOverrideColors by register<Boolean>(false, BOOL)
     val tpsNumberColor by register<Color>(Color(0xbfff00), RGB_COLOR_CODEC)
     val tpsTextColor by register<Color>(Color(0xbfff00), RGB_COLOR_CODEC)
+
+    //Achievements
+    val areAchievementsShown by register<MutableMap<String, Boolean>>(mutableMapOf(), Codec.unboundedMap(STRING, BOOL))
 
     fun getOverrideColorsOption(category: String): Boolean {
         return when (category) {

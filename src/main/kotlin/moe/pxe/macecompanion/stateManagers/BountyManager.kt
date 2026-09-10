@@ -6,6 +6,7 @@ import moe.pxe.macecompanion.stateManagers.EliminationManager.eliminated
 import moe.pxe.macecompanion.util.PlayerProfile.getPlayerProfile
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
+import java.util.concurrent.CompletableFuture
 
 object BountyManager {
     var bounties = HashMap<GameProfile, Int>()
@@ -41,68 +42,71 @@ object BountyManager {
         }
     }
     fun registerBountyListeners() {
-        ClientReceiveMessageEvents.ALLOW_GAME.register{ message, overlay ->
+        ClientReceiveMessageEvents.GAME.register{ message, overlay ->
             val text = message.string
 
-            if (overlay) return@register true
-            if (!text.startsWith("⏵ ")) return@register true
-            if (!text.contains("⛂")) return@register true
-            if (!PlotManager.onMaceRoulette) return@register true
+            if (overlay) return@register
+            if (!text.startsWith("⏵ ")) return@register
+            if (!text.contains("⛂")) return@register
+            if (!PlotManager.onMaceRoulette) return@register
 
-            placedBountyRegex.matchEntire(text)?.groups?.let {
-                val bountyPlacer = it[1]?.value
-                val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
-                val bountyReceiver = it[3]?.value
-                if(!eliminated) getPlayerProfile(bountyReceiver)?.let { profile ->
-                    bounties[profile] = bountyAmount
+            CompletableFuture.runAsync {
+
+                placedBountyRegex.matchEntire(text)?.groups?.let {
+                    val bountyPlacer = it[1]?.value
+                    val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
+                    val bountyReceiver = it[3]?.value
+                    if (!eliminated) getPlayerProfile(bountyReceiver)?.let { profile ->
+                        bounties[profile] = bountyAmount
+                    }
+                    if (bountyReceiver == client.user.name) CustomToasts.sendPlacedBountyToast(bountyAmount, bountyPlacer)
                 }
-                if(bountyReceiver == client.user.name) CustomToasts.sendPlacedBountyToast(bountyAmount, bountyPlacer)
-            }
-            selfPlacedBountyRegex.matchEntire(text)?.groups?.let {
-                val bountyPlacer = it[1]?.value
-                val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
-                if(!eliminated) getPlayerProfile(bountyPlacer)?.let { profile ->
-                    bounties[profile] = bountyAmount
+                selfPlacedBountyRegex.matchEntire(text)?.groups?.let {
+                    val bountyPlacer = it[1]?.value
+                    val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
+                    if (!eliminated) getPlayerProfile(bountyPlacer)?.let { profile ->
+                        bounties[profile] = bountyAmount
+                    }
+                    if (bountyPlacer == client.user.name) CustomToasts.sendSelfPlacedBountyToast(bountyAmount)
                 }
-                if(bountyPlacer == client.user.name) CustomToasts.sendSelfPlacedBountyToast(bountyAmount)
-            }
-            raisedBountyRegex.matchEntire(text)?.groups?.let {
-                val bountyPlacer = it[1]?.value
-                val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
-                val bountyReceiver = it[3]?.value
-                if(!eliminated) getPlayerProfile(bountyReceiver)?.let { profile ->
-                    bounties[profile] = bountyAmount
+                raisedBountyRegex.matchEntire(text)?.groups?.let {
+                    val bountyPlacer = it[1]?.value
+                    val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
+                    val bountyReceiver = it[3]?.value
+                    if (!eliminated) getPlayerProfile(bountyReceiver)?.let { profile ->
+                        bounties[profile] = bountyAmount
+                    }
+                    if (bountyReceiver == client.user.name) CustomToasts.sendRaisedBountyToast(bountyAmount, bountyPlacer)
                 }
-                if(bountyReceiver == client.user.name) CustomToasts.sendRaisedBountyToast(bountyAmount, bountyPlacer)
-            }
-            selfRaisedBountyRegex.matchEntire(text)?.groups?.let {
-                val bountyPlacer = it[1]?.value
-                val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
-                if(!eliminated) getPlayerProfile(bountyPlacer)?.let { profile ->
-                    bounties[profile] = bountyAmount
+                selfRaisedBountyRegex.matchEntire(text)?.groups?.let {
+                    val bountyPlacer = it[1]?.value
+                    val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
+                    if (!eliminated) getPlayerProfile(bountyPlacer)?.let { profile ->
+                        bounties[profile] = bountyAmount
+                    }
+                    if (bountyPlacer == client.user.name) CustomToasts.sendSelfRaisedBountyToast(bountyAmount)
                 }
-                if(bountyPlacer == client.user.name) CustomToasts.sendSelfRaisedBountyToast(bountyAmount)
-            }
-            rewardedBountyRegex.matchEntire(text)?.groups?.let {
-                val bountyReceiver = it[1]?.value
-                val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
-                val playerWithBounty = it[3]?.value
-                if(!eliminated){
-                    val playerWithBountyProfile = getPlayerProfile(playerWithBounty)
-                    bounties.remove(playerWithBountyProfile)
+                rewardedBountyRegex.matchEntire(text)?.groups?.let {
+                    val bountyReceiver = it[1]?.value
+                    val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
+                    val playerWithBounty = it[3]?.value
+                    if (!eliminated) {
+                        val playerWithBountyProfile = getPlayerProfile(playerWithBounty)
+                        bounties.remove(playerWithBountyProfile)
+                    }
+                    if (bountyReceiver == client.user.name) CustomToasts.sendRewardedBountyToast(bountyAmount, playerWithBounty)
                 }
-                if(bountyReceiver == client.user.name) CustomToasts.sendRewardedBountyToast(bountyAmount, playerWithBounty)
-            }
-            cashedInBountyRegex.matchEntire(text)?.groups?.let {
-                val bountyReceiver = it[1]?.value
-                val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
-                if(!eliminated) {
-                    val receiverProfile = getPlayerProfile(bountyReceiver)
-                    bounties.remove(receiverProfile)
+                cashedInBountyRegex.matchEntire(text)?.groups?.let {
+                    val bountyReceiver = it[1]?.value
+                    val bountyAmount = it[2]?.value?.toIntOrNull() ?: -1
+                    if (!eliminated) {
+                        val receiverProfile = getPlayerProfile(bountyReceiver)
+                        bounties.remove(receiverProfile)
+                    }
+                    if (bountyReceiver == client.user.name) CustomToasts.sendCashedInBountyToast(bountyAmount)
                 }
-                if(bountyReceiver == client.user.name) CustomToasts.sendCashedInBountyToast(bountyAmount)
             }
-            return@register true
+            return@register
         }
     }
 }

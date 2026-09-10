@@ -1,0 +1,7 @@
+{
+  "id": "w_no_w",
+  "on_item_model": "macecompanion:achievements/w_no_w_on",
+  "off_item_model": "macecompanion:achievements/w_no_w_off",
+  "loss_triggers": "walk_forward",
+  "reset_condition": "game"
+}

@@ -123,22 +123,22 @@ object CustomKeybinds {
 
         ClientTickEvents.END_CLIENT_TICK.register { client ->
             while (openProfileKeyBinding.consumeClick()) {
-                if(PlotManager.onMaceRoulette) SendMessage.sendMessage("@profile")
+                if(PlotManager.onMaceRoulette && !PlotManager.isStatless) SendMessage.sendMessage("@profile")
             }
             while (openCosmeticsKeyBinding.consumeClick()) {
-                if(PlotManager.onMaceRoulette) SendMessage.sendMessage("@cosmetics")
+                if(PlotManager.onMaceRoulette && !PlotManager.isStatless) SendMessage.sendMessage("@cosmetics")
             }
             while (openEventsKeyBinding.consumeClick()) {
-                if(PlotManager.onMaceRoulette) SendMessage.sendMessage("@events")
+                if(PlotManager.onMaceRoulette && !PlotManager.isStatless) SendMessage.sendMessage("@events")
             }
             while (openStarRoadKeyBinding.consumeClick()) {
-                if(PlotManager.onMaceRoulette) SendMessage.sendMessage("@starroad")
+                if(PlotManager.onMaceRoulette && !PlotManager.isStatless) SendMessage.sendMessage("@starroad")
             }
             while (openMidasMondayKeyBinding.consumeClick()) {
-                if(PlotManager.onMaceRoulette) SendMessage.sendMessage("@midas")
+                if(PlotManager.onMaceRoulette && !PlotManager.isStatless) SendMessage.sendMessage("@midas")
             }
             while (openLeaderboardKeyBinding.consumeClick()) {
-                if(PlotManager.onMaceRoulette) SendMessage.sendMessage("@lb")
+                if(PlotManager.onMaceRoulette && !PlotManager.isStatless) SendMessage.sendMessage("@lb")
             }
             while (openModOptionsKeyBinding.consumeClick()) {
                 if (client.gui.screen() == null) {

@@ -5,6 +5,7 @@ import moe.pxe.macecompanion.CustomToasts.sendEternalElectorToast
 import moe.pxe.macecompanion.CustomToasts.sendModifierChargerToast
 import moe.pxe.macecompanion.stateManagers.ModifierManager.getModifierFromMessage
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
+import java.util.concurrent.CompletableFuture
 
 object ConsumableManager {
     var eternalElectorPlayer: String? = null
@@ -23,12 +24,13 @@ object ConsumableManager {
     }
 
     fun registerConsumableListeners() {
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.GAME.register { message, overlay ->
             val text = message.string
 
-            if (overlay) return@register true
-            if (!text.startsWith("⏵") && !text.contains("#")) return@register true
+            if (overlay) return@register
+            if (!text.startsWith("⏵") && !text.contains("#")) return@register
 
+            CompletableFuture.runAsync {
             modifierChargerRegex.matchEntire(text)?.groups?.let {
                 val player = it[1]?.value.toString()
                 val modifier = getModifierFromMessage(message).translatable.string
@@ -57,7 +59,8 @@ object ConsumableManager {
                 eternalElectorPlayer = null
                 eternalElectorModifier = null
             }
-            return@register true
+        }
+            return@register
         }
     }
 }

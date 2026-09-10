@@ -6,6 +6,7 @@ import moe.pxe.macecompanion.util.PlayerProfile.resolvePlayerFromRawName
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
 import net.minecraft.client.Minecraft
+import java.util.concurrent.CompletableFuture
 
 object ShowdownManager {
     var redPlayer: GameProfile? = null
@@ -44,25 +45,27 @@ object ShowdownManager {
             redPlayer?.let { redVotesPercentage = getShowdownVotes(it.name) }
             bluePlayer?.let { blueVotesPercentage = getShowdownVotes(it.name) }
         })
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, _ ->
+        ClientReceiveMessageEvents.GAME.register { message, _ ->
             val text = message.string
 
             val containsVS = text.contains("vs")
             val containsStar = text.startsWith("☆")
-            if(!containsStar && !containsVS) return@register true
+            if(!containsStar && !containsVS) return@register
 
-            if(containsVS) showdownVotingRegex.matchEntire(text)?.groups?.let {
-                redPlayer = resolvePlayerFromRawName(it[1]?.value)
-                bluePlayer = resolvePlayerFromRawName(it[2]?.value)
-                sendAutoBet()
+            CompletableFuture.runAsync {
+                if (containsVS) showdownVotingRegex.matchEntire(text)?.groups?.let {
+                    redPlayer = resolvePlayerFromRawName(it[1]?.value)
+                    bluePlayer = resolvePlayerFromRawName(it[2]?.value)
+                    sendAutoBet()
+                }
+                if (containsStar) showdownOverRegex.matchEntire(text)?.groups?.let {
+                    redPlayer = null
+                    bluePlayer = null
+                    redVotesPercentage = -1
+                    blueVotesPercentage = -1
+                }
             }
-            if(containsStar) showdownOverRegex.matchEntire(text)?.groups?.let {
-                redPlayer = null
-                bluePlayer = null
-                redVotesPercentage = -1
-                blueVotesPercentage = -1
-            }
-            return@register true
+            return@register
         }
     }
 }

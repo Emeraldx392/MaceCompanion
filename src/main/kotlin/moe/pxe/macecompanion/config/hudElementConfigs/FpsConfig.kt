@@ -8,7 +8,6 @@ import moe.pxe.macecompanion.config.Config
 import moe.pxe.macecompanion.config.Config.fpsNumberColor
 import moe.pxe.macecompanion.config.Config.fpsOverrideColors
 import moe.pxe.macecompanion.config.Config.fpsTextColor
-import moe.pxe.macecompanion.config.Config.saveToFileAndRefreshRendering
 import moe.pxe.macecompanion.util.OptionUtils.addColorOptionDependency
 import moe.pxe.macecompanion.util.OptionUtils.overrideColorOption
 import moe.pxe.macecompanion.util.OptionUtils.overrideColorsOption

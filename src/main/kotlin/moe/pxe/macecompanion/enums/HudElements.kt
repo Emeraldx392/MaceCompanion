@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile
 import dev.isxander.yacl3.api.NameableEnum
 import dev.isxander.yacl3.config.v3.value
 import moe.pxe.macecompanion.config.Config
+import moe.pxe.macecompanion.config.Config.areAchievementsShown
 import moe.pxe.macecompanion.config.Config.eliminationsHideWhenEliminated
 import moe.pxe.macecompanion.config.Config.getAccentColor
 import moe.pxe.macecompanion.config.Config.maceChanceHideWhenEliminated
@@ -13,6 +14,7 @@ import moe.pxe.macecompanion.config.Config.modifiersUseCustomModifierIcons
 import moe.pxe.macecompanion.config.Config.starFragmentsHideWhenEliminated
 import moe.pxe.macecompanion.config.controllers.ConfigurableEnum
 import moe.pxe.macecompanion.config.hudElementConfigs.AccuracyConfig
+import moe.pxe.macecompanion.config.hudElementConfigs.AchievementsConfig
 import moe.pxe.macecompanion.config.hudElementConfigs.BountyBoardConfig
 import moe.pxe.macecompanion.config.hudElementConfigs.EliminationsConfig
 import moe.pxe.macecompanion.config.hudElementConfigs.FpsConfig
@@ -24,7 +26,10 @@ import moe.pxe.macecompanion.config.hudElementConfigs.PlaytimeConfig
 import moe.pxe.macecompanion.config.hudElementConfigs.RoundNumberConfig
 import moe.pxe.macecompanion.config.hudElementConfigs.StarFrgamentsConfig
 import moe.pxe.macecompanion.config.hudElementConfigs.TpsConfig
+import moe.pxe.macecompanion.resourceLoaders.AchievementResourceLoader
+import moe.pxe.macecompanion.resourceLoaders.AchievementResourceLoader.forceStopRendering
 import moe.pxe.macecompanion.stateManagers.AccuracyManager.maceAttempts
+import moe.pxe.macecompanion.stateManagers.AchievementManager.possibleAchievements
 import moe.pxe.macecompanion.stateManagers.BountyManager.bounties
 import moe.pxe.macecompanion.stateManagers.EliminationManager.eliminated
 import moe.pxe.macecompanion.stateManagers.EliminationManager.eliminations
@@ -38,6 +43,7 @@ import moe.pxe.macecompanion.stateManagers.PerformanceStatsManager.fps
 import moe.pxe.macecompanion.stateManagers.PerformanceStatsManager.ping
 import moe.pxe.macecompanion.stateManagers.PerformanceStatsManager.tps
 import moe.pxe.macecompanion.stateManagers.PlotManager.isStatless
+import moe.pxe.macecompanion.stateManagers.PlotManager.onDiamondfire
 import moe.pxe.macecompanion.stateManagers.RoundManager.gameOngoing
 import moe.pxe.macecompanion.stateManagers.RoundManager.maceChance
 import moe.pxe.macecompanion.stateManagers.RoundManager.playtime
@@ -50,11 +56,13 @@ import moe.pxe.macecompanion.util.TextUtils.getStarFragmentIcon
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
+import net.minecraft.core.component.DataComponents
 import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.minecraft.util.CommonColors
 import net.minecraft.util.StringRepresentable
 import net.minecraft.world.item.ItemStack
+import net.minecraft.world.item.Items
 import kotlin.math.roundToInt
 import kotlin.time.DurationUnit
 
@@ -543,7 +551,7 @@ enum class HudElements : NameableEnum, StringRepresentable, ConfigurableEnum {
         }
 
         override fun render(context: GuiGraphicsExtractor, yOffset: Int, rightAligned: Boolean, bottomAligned: Boolean): Int {
-            if (tps == -1f) return 0
+            if (!onDiamondfire || tps == -1f) return 0
 
             val textRenderer = Minecraft.getInstance().font
 
@@ -562,7 +570,34 @@ enum class HudElements : NameableEnum, StringRepresentable, ConfigurableEnum {
         }
 
         override fun generateConfig(parent: Screen): Screen? = TpsConfig.generateConfig(parent)
-    }, ;
+    },
+    ACHIEVEMENTS {
+        override fun refreshRendering() {}
+
+        override fun render(context: GuiGraphicsExtractor, yOffset: Int, rightAligned: Boolean, bottomAligned: Boolean): Int {
+            if (!gameOngoing || eliminated) return 0
+            if(forceStopRendering) return 0
+            if (isStatless) return 0
+
+            var yPos = if (bottomAligned) -yOffset - 12 else yOffset
+            var xPos = if (rightAligned) -16 else 0
+
+            val ach = AchievementResourceLoader.getAll().values
+
+            ach.forEach { achievement ->
+                if (AchievementResourceLoader.getAllIdStrings().contains(achievement.id) && areAchievementsShown.value[achievement.id] ?: false) {
+                    val itemStack = Items.ITEM_FRAME.defaultInstance.apply {
+                        if (possibleAchievements.contains(achievement)) set(DataComponents.ITEM_MODEL, achievement.onItemModel) else set(DataComponents.ITEM_MODEL, achievement.offItemModel)
+                    }
+                    context.item(itemStack, xPos, yPos)
+                    xPos += if (rightAligned) -16 else 16
+                }
+            }
+            return 20
+        }
+
+        override fun generateConfig(parent: Screen): Screen? = AchievementsConfig.generateConfig(parent)
+    };
 
     abstract fun refreshRendering()
     abstract fun render(context: GuiGraphicsExtractor, yOffset: Int, rightAligned: Boolean, bottomAligned: Boolean): Int

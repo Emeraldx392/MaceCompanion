@@ -3,7 +3,10 @@ package moe.pxe.macecompanion.stateManagers
 import moe.pxe.macecompanion.AutoGG
 import moe.pxe.macecompanion.AutoGL
 import moe.pxe.macecompanion.enums.Modifiers
+import moe.pxe.macecompanion.resourceLoaders.AchievementResourceLoader.forceStopRendering
 import moe.pxe.macecompanion.stateManagers.AccuracyManager.resetAccuracyData
+import moe.pxe.macecompanion.stateManagers.AchievementManager.clearTriggersForResetCondition
+import moe.pxe.macecompanion.stateManagers.AchievementManager.timesDealtDamage
 import moe.pxe.macecompanion.stateManagers.EliminationManager.checkIfEliminated
 import moe.pxe.macecompanion.stateManagers.EliminationManager.eliminated
 import moe.pxe.macecompanion.stateManagers.EliminationManager.eliminations
@@ -14,6 +17,7 @@ import moe.pxe.macecompanion.stateManagers.ModifierManager.modifierBoosters
 import moe.pxe.macecompanion.stateManagers.ModifierManager.modifiers
 import moe.pxe.macecompanion.stateManagers.ModifierManager.checkingModifiers
 import moe.pxe.macecompanion.stateManagers.ModifierManager.mysteryAmount
+import moe.pxe.macecompanion.stateManagers.PerformanceStatsManager.askForTPS
 import moe.pxe.macecompanion.stateManagers.PlotManager.plotHandle
 import moe.pxe.macecompanion.stateManagers.PlotManager.plotId
 import moe.pxe.macecompanion.stateManagers.PlotManager.requestPlotId
@@ -26,6 +30,7 @@ import net.minecraft.network.chat.Component
 import net.minecraft.network.chat.Style
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.world.InteractionResult
+import java.util.concurrent.CompletableFuture
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
@@ -68,6 +73,9 @@ object RoundManager {
             starFragments = if (eliminated) -1 else 0
             AutoGL.sendGlMessage()
             BountyManager.getBountyData()
+            timesDealtDamage = 0
+            clearTriggersForResetCondition("game")
+            forceStopRendering = false
         }
         round = number
         gameOngoing = true
@@ -78,28 +86,32 @@ object RoundManager {
         mysteryAmount = 0
         maceChance = 100f / playersAlive
         hideNewRoundOrGameTextMessage = false
+        if(number % 5 == 0) askForTPS()
         if(plotId == null || plotHandle == null || playersTotal < 2) requestPlotId()
+        clearTriggersForResetCondition("round")
     }
 
     fun registerRoundListeners() {
-        ClientReceiveMessageEvents.ALLOW_GAME.register { message, overlay ->
+        ClientReceiveMessageEvents.GAME.register { message, overlay ->
             val text = message.string
 
-            if (overlay) return@register true
-            if (!PlotManager.onMaceRoulette) return@register true
+            if (overlay) return@register
+            if (!PlotManager.onMaceRoulette) return@register
 
-            chatRoundNumberRegex.matchEntire(text)?.groups?.let {
-                val roundNumber = it[1]?.value?.toInt() ?: 0
-                val playersCurrentlyAlive = it[2]?.value?.toInt() ?: 0
-                setRoundNumber(roundNumber)
-                playersAlive = playersCurrentlyAlive
-            }
-            chatLeaderboardHeaderRegex.matchEntire(message.string)?.let {
-                gameOngoing = false
-                AutoGG.sendGGMessage()
+            CompletableFuture.runAsync {
+                chatRoundNumberRegex.matchEntire(text)?.groups?.let {
+                    val roundNumber = it[1]?.value?.toInt() ?: 0
+                    val playersCurrentlyAlive = it[2]?.value?.toInt() ?: 0
+                    setRoundNumber(roundNumber)
+                    playersAlive = playersCurrentlyAlive
+                }
+                chatLeaderboardHeaderRegex.matchEntire(message.string)?.let {
+                    gameOngoing = false
+                    AutoGG.sendGGMessage()
+                }
             }
 
-            return@register true
+            return@register
         }
         TitleCallback.EVENT.register(
             object : TitleCallback {

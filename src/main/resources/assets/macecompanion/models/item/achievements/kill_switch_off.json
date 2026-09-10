@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "macecompanion:item/achievements/kill_switch_off"
+  }
+}

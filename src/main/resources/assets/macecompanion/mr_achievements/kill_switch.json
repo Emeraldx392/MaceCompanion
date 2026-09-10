@@ -1,0 +1,10 @@
+{
+  "id": "kill_switch",
+  "on_item_model": "macecompanion:achievements/kill_switch_on",
+  "off_item_model": "macecompanion:achievements/kill_switch_off",
+  "loss_triggers": {
+    "trigger": "deal_damage",
+    "amount": 2
+  },
+  "reset_condition": "game"
+}
