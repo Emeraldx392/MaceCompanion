@@ -87,6 +87,7 @@ object PlotManager {
             AccuracyManager.resetAccuracyData()
             RoundManager.resetRoundData()
             ModifierManager.resetModifierData()
+            TimeManager.resetTimeData()
             AchievementManager.clearAllTriggers()
         }
         ClientPlayConnectionEvents.DISCONNECT.register { _, _ ->

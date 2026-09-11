@@ -46,10 +46,10 @@ import moe.pxe.macecompanion.stateManagers.PlotManager.isStatless
 import moe.pxe.macecompanion.stateManagers.PlotManager.onDiamondfire
 import moe.pxe.macecompanion.stateManagers.RoundManager.gameOngoing
 import moe.pxe.macecompanion.stateManagers.RoundManager.maceChance
-import moe.pxe.macecompanion.stateManagers.RoundManager.playtime
 import moe.pxe.macecompanion.stateManagers.RoundManager.round
 import moe.pxe.macecompanion.stateManagers.RoundManager.roundColor
 import moe.pxe.macecompanion.stateManagers.StarFragmentManager.starFragments
+import moe.pxe.macecompanion.stateManagers.TimeManager.playtime
 import moe.pxe.macecompanion.util.PlayerProfile.headFromProfile
 import moe.pxe.macecompanion.util.TextUtils.buildModifierTextWith2dBoosters
 import moe.pxe.macecompanion.util.TextUtils.getStarFragmentIcon

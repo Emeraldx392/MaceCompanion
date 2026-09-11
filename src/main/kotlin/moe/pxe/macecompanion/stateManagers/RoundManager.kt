@@ -22,6 +22,7 @@ import moe.pxe.macecompanion.stateManagers.PlotManager.plotHandle
 import moe.pxe.macecompanion.stateManagers.PlotManager.plotId
 import moe.pxe.macecompanion.stateManagers.PlotManager.requestPlotId
 import moe.pxe.macecompanion.stateManagers.StarFragmentManager.starFragments
+import moe.pxe.macecompanion.stateManagers.TimeManager.playtime
 import moe.pxe.macecompanion.util.TextUtils.hideNewRoundOrGameTextMessage
 import moe.pxe.macecompanion.util.TitleCallback
 import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents
@@ -31,14 +32,12 @@ import net.minecraft.network.chat.Style
 import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket
 import net.minecraft.world.InteractionResult
 import java.util.concurrent.CompletableFuture
-import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
 object RoundManager {
     var gameOngoing = false
     var round = -1
     var roundColor: Style? = Style.EMPTY.withColor(0x9ef6fc)
-    var playtime: TimeMark? = null
     var maceChance = -1f
 
     val chatRoundNumberRegex = Regex("""\s+Round (\d+) \((\d+)👤\)\s+""")
@@ -49,7 +48,6 @@ object RoundManager {
         gameOngoing = false
         round = -1
         roundColor = Style.EMPTY.withColor(0x9ef6fc)
-        playtime = null
         maceChance = -1f
     }
 

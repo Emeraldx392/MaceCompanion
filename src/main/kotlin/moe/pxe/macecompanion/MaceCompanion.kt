@@ -17,6 +17,7 @@ import moe.pxe.macecompanion.stateManagers.ResourcePackManager
 import moe.pxe.macecompanion.stateManagers.RoundManager
 import moe.pxe.macecompanion.stateManagers.ShowdownManager
 import moe.pxe.macecompanion.stateManagers.StarFragmentManager
+import moe.pxe.macecompanion.stateManagers.TimeManager
 import moe.pxe.macecompanion.util.SendMessage
 import net.fabricmc.api.EnvType
 import net.fabricmc.api.ModInitializer
@@ -52,6 +53,7 @@ class MaceCompanion : ModInitializer {
         RoundManager.registerRoundListeners()
         ModifierManager.registerModifierListeners()
         AchievementManager.registerAchievementListeners()
+        TimeManager.registerTimeListeners()
         ResourcePackManager.registerResourcePackListeners()
         SendMessage.registerTickListener()
         HideGLGG.registerListener()

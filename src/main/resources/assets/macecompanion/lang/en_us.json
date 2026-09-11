@@ -125,6 +125,12 @@
     "mrc.config.category.miscellaneous.group.plotIds": "Plot IDs and Handles",
     "mrc.config.category.miscellaneous.group.plotIds.description": "A list of Plot IDs and Handles to look for when checking if the player is on Mace Roulette.",
 
+    "mrc.config.category.miscellaneous.group.daytime": "Daytime",
+    "mrc.config.category.toasts.group.daytime.description": "Settings related to the daytime in Mace Roulette.",
+
+    "mrc.config.category.miscellaneous.group.daytime.option.syncTime": "Synchronize Daytime with Real Time",
+    "mrc.config.category.miscellaneous.group.daytime.option.syncTime.description": "Synchronizes the Daytime in Mace Roulette to follow the time set on your computer.",
+
     "mrc.config.round_number.category.styling": "Styling",
 
     "mrc.config.round_number.category.styling.group.colors": "Colors",

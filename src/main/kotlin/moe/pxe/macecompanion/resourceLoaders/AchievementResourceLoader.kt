@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets
 import kotlin.collections.forEach
 
 object AchievementResourceLoader : SimplePreparableReloadListener<Map<String, MRAchievement>>() {
-    const val ACHIEVEMENT_DIRECTORY = "mr_achievements"
+    const val ACHIEVEMENT_DIRECTORY = "mace_roulette_companion/achievements"
 
     override fun prepare(resourceManager: ResourceManager, profiler: net.minecraft.util.profiling.ProfilerFiller): Map<String, MRAchievement> {
         val result = mutableMapOf<String, MRAchievement>()

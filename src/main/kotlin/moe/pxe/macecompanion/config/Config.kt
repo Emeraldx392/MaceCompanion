@@ -85,6 +85,7 @@ object Config : JsonFileCodecConfig<Config>(FabricLoader.getInstance().configDir
 
     // Misc. Config
     val plotIds by register<List<String>>(listOf("mace", "statless"), STRING.listOf())
+    val syncTime by register<Boolean>(false, BOOL)
 
     // NESTED CONFIG ===========================================================
 
